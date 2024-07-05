@@ -1,103 +1,125 @@
-import { BrowserRouter, Route, Routes,Navigate } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
-import './App.css';
-import Dashboard from './pages/Dashboard';
-import Header from './components/Header';
-import Sidebar from './components/Sidebar';
-import { createContext, useEffect, useState } from 'react';
-import Login from './pages/Auth/Login';
-import SignUp from './pages/Auth/SignUp';
-import Products from './pages/Products/Products';
-import ProductDetails from './pages/Products/ProductDetails';
-import ProductUpload from './pages/Products/ProductUpload';
-import ProductAdd from './pages/Products/ProductAdd';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import api, { checkTokenExpiration, refreshAccessToken } from './api/api'; 
+// import "./pages/Admin.css"
+import { createContext, useEffect, useState } from "react";
+import Login from "./components/Auth/Login";
+import SignUp from "./components/Auth/SignUp";
+import "react-toastify/dist/ReactToastify.css";
+// import api, { checkTokenExpiration, refreshAccessToken } from "./api/api";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  Switch,
+  Navigate,
+} from "react-router-dom";
+import AdminPage from "./pages/AdminPage";
+import UserPage from "./pages/UserPage";
+import NotFound from "./pages/NotFound";
+import AdminHeader from "./components/common/Header/AdminHeader";
+import AdminSidebar from "./components/common/Sidebar/AdminSidebar";
+import { messaging } from "./firebase";
 
-const MyContext = createContext();
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
+import { getToken,onMessage } from 'firebase/messaging';
+
+
+
+
+const AdminContext = createContext();
 
 function App() {
+  
 
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setisHideSidebarAndHeader] = useState(false);
   const [themeMode, setThemeMode] = useState(true);
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState("");
   const [shop, setShop] = useState(false);
   const [userData, setUserData] = useState();
-  const [accessToken, setAccessToken] = useState(localStorage.getItem('accessToken'));
-  const [isOnline, setIsOnline] = useState(navigator.onLine); // Thêm trạng thái kết nối internet
+  const [accessToken, setAccessToken] = useState(
+    localStorage.getItem("accessToken")
+  );
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  useEffect(() => {
+    const theme_Mode = localStorage.getItem("themeMode");
 
-  useEffect(()=>{
-
-    const theme_Mode = localStorage.getItem('themeMode');
-
-   if(themeMode===true){
-    document.body.classList.remove('dark');
-    document.body.classList.add('light');
-    localStorage.setItem('themeMode','light');
-   }
-   else{
-    document.body.classList.remove('light');
-    document.body.classList.add('dark');
-    localStorage.setItem('themeMode','dark');
-   }
-  },[themeMode]);
+    if (themeMode === true) {
+      document.body.classList.remove("dark");
+      document.body.classList.add("light");
+      localStorage.setItem("themeMode", "light");
+    } else {
+      document.body.classList.remove("light");
+      document.body.classList.add("dark");
+      localStorage.setItem("themeMode", "dark");
+    }
+  }, [themeMode]);
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
+   
   }, []);
 
   useEffect(() => {
-    const U_Data = localStorage.getItem('userData');
-    const Token = localStorage.getItem('accessToken');
+    
+    getFCMToken()
+    receiveNotification();
+  }, []);
 
+const KEY_NOTIFICATION='BM3Y2Pjac_cXYLqdMcakUzyRr18yJVgFmzLvLB6TeLaxKVWAEH-IU6waqCyrPighwscW6IGwtniojdS1diOptJA'
+  const getFCMToken = async () => {
+    try {
+      const currentToken = await getToken(messaging, { vapidKey: KEY_NOTIFICATION });
+      if (currentToken) {
+        console.log('Current token:', currentToken);
+
+      } 
+    } catch (error) {
+      console.error('Error retrieving FCM token:', error);
+    }
+  };
+  const receiveNotification = async() => {
+   const aa= await onMessage(messaging,(payload) => {
+      console.log('Received message:', payload);
+
+      // Customize notification display (e.g., toast, alert)
+      toast.info(payload.notification.title);
+      alert(`New notification: ${payload.notification.title}`);
+    });
+  };
+
+  useEffect(() => {
+    const U_Data = localStorage.getItem("userData");
+    const Token = localStorage.getItem("accessToken");
+    // console.log('Token', Token);
     if (U_Data) {
       setUserData(U_Data);
       setRole(JSON.parse(U_Data).role);
     }
-
-    const checkAndRefreshToken = async () => {
-      if (Token) {
-        if (checkTokenExpiration(Token)) {
-          const newAccessToken = await refreshAccessToken();
-          if (newAccessToken) {
-            setAccessToken(newAccessToken);
-            setIsLogin(true);
-          } else {
-            setIsLogin(false);
-          }
-        } else {
-          setAccessToken(Token);
-          setIsLogin(true);
-        }
-      }
-    };
-
-    checkAndRefreshToken();
-  }, [isLogin]);
+    if (Token) {
+      setAccessToken(Token);
+      setIsLogin(true);
+    } else {
+      setIsLogin(false);
+    }
+    
+  }, [accessToken]);
 
 
 
-  // useEffect(()=>{
-  //   const U_Data = localStorage.getItem('userData');
-  //   const Token = localStorage.getItem('accessToken');
-  // //  console.log('userData',userData);
-  //  if(U_Data) { setUserData(U_Data);setRole(JSON.parse(U_Data).role)}
-  //  if(Token){ setAccessToken(Token)}
 
-  // },[isLogin]);
 
-  // console.log('setUserData',userData)
+  
+
   // console.log('acctoken',accessToken)
 
   const values = {
@@ -111,41 +133,59 @@ function App() {
     setThemeMode,
     role,
     shop,
-    setShop
-  }
+    setShop,
+  };
 
   return (
     <BrowserRouter>
-      <MyContext.Provider value={values}>
-        {
-          isHideSidebarAndHeader !== true &&
-          <Header />
-        }
-        <div className='main d-flex'>
-          {
-            isHideSidebarAndHeader !== true &&
-            <div className={`sidebarWrapper ${isToggleSidebar === true ? 'toggle' : ''}`}>
-              <Sidebar />
+      <AdminContext.Provider value={values}>
+        {!isHideSidebarAndHeader && <AdminHeader />}
+        <div className="main d-flex">
+          {isHideSidebarAndHeader !== true && (
+            <div
+              className={`sidebarWrapper ${
+                isToggleSidebar === true ? "toggle" : ""
+              }`}
+            >
+              <AdminSidebar />
             </div>
-          }
-          <div className={`content ${isHideSidebarAndHeader===true && 'full'} ${isToggleSidebar === true ? 'toggle' : ''}`}>
-          <Routes>
-              <Route path="/" element={isLogin && shop && accessToken ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
-              <Route path="/dashboard" element={isLogin && shop && accessToken && isOnline ? <Dashboard /> : <Navigate to="/login" />} />
-              <Route path="/login" element={!isLogin || !shop || !accessToken || !isOnline ? <Login /> : <Navigate to="/dashboard" />} />
-              <Route path="/signUp" element={<SignUp />} />
-              <Route path="/products" element={isLogin && shop && accessToken && isOnline ? <Products /> : <Navigate to="/login" />} />
-              <Route path="/product/details/:id" element={isLogin && shop && accessToken && isOnline ? <ProductDetails /> : <Navigate to="/login" />} />
-              <Route path="/product/add" element={isLogin && shop && accessToken && isOnline ? <ProductAdd /> : <Navigate to="/login" />} />
-              <Route path="/product/upload/:id" element={isLogin && shop && accessToken && isOnline ? <ProductUpload /> : <Navigate to="/login" />} />
+          )}
+          <div
+            className={`content ${isHideSidebarAndHeader === true && "full"} ${
+              isToggleSidebar === true ? "toggle" : ""
+            }`}
+          >
+            <Routes>
+            <Route
+                path={`/login`}
+                element={
+                  <Login setIsLogin={setIsLogin} setAccessToken={setAccessToken} />
+                }
+              />
+              {/* <Route path={`/login`} element={<Login />} /> */}
+              <Route path={`/signUp`} element={<SignUp />} />
+              <Route
+                path="/dashboard"
+                element={
+                  isLogin && shop && accessToken && isOnline ? (
+                    <AdminPage />
+                  ) : (
+                    <Navigate to="/login" />
+                  )
+                }
+              />
+              <Route path="/admin/*" element={<AdminPage />} />
+              <Route path="/user/*" element={<UserPage />} />
+              <Route path="/" element={<Navigate to="/user/home" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </div>
         </div>
         <ToastContainer />
-      </MyContext.Provider>
+      </AdminContext.Provider>
     </BrowserRouter>
   );
 }
 
 export default App;
-export { MyContext }
+export { AdminContext };

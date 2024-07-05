@@ -61,7 +61,8 @@ export const convertToWords = (amount) => {
     return result.trim();
 };
 
-export const formatPrice = (price) => {
+export const formatPrice = (Price) => {
+  const price = String(Price);
   const cleanedPrice = price.replace(/[^0-9.]/g, "");
   const normalizedPrice = cleanedPrice.replace(/\.{2,}/g, ".");
   const parts = normalizedPrice.split(".");
@@ -71,6 +72,19 @@ export const formatPrice = (price) => {
   parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const formattedPrice = parts.join(".");
   return formattedPrice;
+};
+export const convertToVietnamTime = (utcDateString) => {
+  const utcDate = new Date(utcDateString);
+  const vietnamTime = new Date(utcDate.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+  const options = {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  };
+  return vietnamTime.toLocaleString('vi-VN', options);
 };
 
   
