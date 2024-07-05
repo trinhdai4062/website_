@@ -1,7 +1,7 @@
-node_modules
+node_modules/
 src/firebase.js
 /.pnp
-.pnp.js
+# .pnp.js
 # testing
 /coverage
 
