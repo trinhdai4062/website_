@@ -26,9 +26,9 @@ const Listing = ({ categoriData, single }) => {
   let { id } = useParams();
 
   var itemsData = [];
-  console.log("categoriData", categoriData);
-  console.log("single", single);
-  console.log("id", id);
+  // console.log("categoriData", categoriData);
+  // console.log("single", single);
+  // console.log("id", id);
   useEffect(() => {
     const getCartData = async () => {
       try {
@@ -62,19 +62,7 @@ const Listing = ({ categoriData, single }) => {
 
     processData();
   }, [dataCateGori, single, id]);
-  const AA = async () => {
-    dataCateGori.length !== 0 &&
-    dataCateGori.map((item) => {
-      console.log("mapppp", item);
-      if (single === true && item._id === id) {
-        item.parentShose.map((item_) => {
-          itemsData.push({ ...item_ });
-        });
-      }
-    });
-    setData(itemsData);
-  };
-  console.log('data',data)
+ 
 
   // useEffect(() => {
   //   dataCateGori.length !== 0 &&

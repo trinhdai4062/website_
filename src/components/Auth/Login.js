@@ -25,6 +25,13 @@ import {
 import { baseURL_ } from "../../utils/env";
 
 import { app } from "../../firebase";
+
+import { useDispatch, useSelector } from "react-redux";
+import {
+  doLoginSuccess,
+  doLoginError
+} from "../../redux/reducer/authReducer";
+
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
@@ -39,11 +46,9 @@ const Login = () => {
 
   const context = useContext(AdminContext);
   const navigate = useNavigate();
-
-
+  const dispatch = useDispatch();
   console.log("context", context);
   //   console.log("email", email);
-  //   console.log("password", password);
 
   const handleMK = useCallback((event) => {
     const value = event.target.value;
@@ -75,54 +80,41 @@ const Login = () => {
   };
 
   const handleLogin = async () => {
-
-
-    console.log('baseURL_',baseURL_)
-
-
     if (!emailError && !passwordError && email && password) {
-
-      axios
-        .post(
-          `${baseURL_}/auth/login`,
-          { email, password },
-          // { withCredentials: true }
-        )
-        .then((response) => {
-          // console.log("response", response.data);
-          if (response.data.status === true) {
-            localStorage.setItem("accessToken", response.data.accessToken);
-            localStorage.setItem("_id", response.data.data._id);
-            localStorage.setItem(
-              "userData",
-              JSON.stringify(response.data.data)
-            );
-            localStorage.setItem("shop", response.data.data.shop);
-            // console.log("login", response.data.data.shop);
-            const role = response.data.data.role;
-            context.setIsLogin(true);
-            context.setShop(response.data.data.shop);
-            // navigate(role==='admin'?'/admin':'/user');
-            navigate("/admin");
-          }
-        })
-        .catch((error) => {
-          console.log("error", error)
-          // console.log("error", error.response.data.message);
-          // window.alert(error.response.data.message);
-        });
+      try {
+        const response = await api.post(`${baseURL_}/auth/login`,{ email, password });
+        if (response.data.status === true) {
+          const userInfor = {
+            access_token: response.data.accessToken,
+            data: response.data.data,
+          };
+          localStorage.setItem('access_token', response.data.accessToken)
+          localStorage.setItem("shop", response.data.data.shop);
+          localStorage.setItem("role", response.data.data.role);
+          dispatch(doLoginSuccess(userInfor));
+          const role = response.data.data.role;
+          navigate(role==='admin'?'/admin':'/user');
+          // navigate("/admin");
+        }else{
+          dispatch(doLoginError(response));
+        }
+      } catch (error) {
+        console.log("error", error);
+        dispatch(doLoginError(error));
+      }
     } else {
       if (!email) setEmailError("Vui lòng nhập email");
       if (!password) setPasswordError("Vui lòng nhập mật khẩu");
     }
   };
+
   const signInWithGoogle = async () => {
-    setShowLoader(true); 
+    setShowLoader(true);
     try {
       const result = await signInWithPopup(auth, googleProvider);
-      
+
       const credential = GoogleAuthProvider.credentialFromResult(result);
-  
+
       const user = result.user;
       const data = {
         username: user.email,
@@ -130,37 +122,32 @@ const Login = () => {
         fullName: user.displayName,
         avatar: user.photoURL,
       };
-  
+
       const res = await axios.post(`${baseURL_}/auth/loginsocial`, { data });
-      console.log('Response from server:', res.data);
-  
-      setShowLoader(false); 
+      console.log("Response from server:", res.data);
+
+      setShowLoader(false);
       if (res.data.status === true) {
         localStorage.setItem("accessToken", res.data.accessToken);
         localStorage.setItem("_id", res.data.data._id);
-        localStorage.setItem(
-          "userData",
-          JSON.stringify(res.data.data)
-        );
+        localStorage.setItem("userData", JSON.stringify(res.data.data));
         localStorage.setItem("shop", res.data.data.shop);
         // console.log("login", response.data.data.shop);
         const role = res.data.data.role;
         context.setIsLogin(true);
         context.setShop(res.data.data.shop);
-        navigate(role==='admin'?'/admin':'/user');
+        navigate(role === "admin" ? "/admin" : "/user");
         // navigate("/admin");
       }
-    
     } catch (error) {
-      setShowLoader(false); 
-      console.error('Error signing in with Google:', error);
+      setShowLoader(false);
+      console.error("Error signing in with Google:", error);
       const errorCode = error.code;
       const errorMessage = error.message;
       const email = error.customData.email;
       const credential = GoogleAuthProvider.credentialFromError(error);
     }
   };
-  
 
   return (
     <>
@@ -177,7 +164,11 @@ const Login = () => {
           <section className="loginSection">
             <div className="loginBox">
               <div className="logo text-center">
-                <img src={require('../../assets/images/logo_background.png')} width="120px" alt="Logo" />
+                <img
+                  src={require("../../assets/images/logo_background.png")}
+                  width="120px"
+                  alt="Logo"
+                />
                 <h5 className="font-weight-bold">Login to BigShose</h5>
               </div>
 

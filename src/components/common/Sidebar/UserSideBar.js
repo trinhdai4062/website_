@@ -18,9 +18,9 @@ import { UserContext } from "../../../pages/UserPage";
 import { baseURL_ } from "../../../utils/env";
 import {formatVND} from '../../../utils/formart'
 
-function valuetext(value) {
-  return `${value}°C`;
-}
+// function valuetext(value) {
+//   return `${value}°C`;
+// }
 const label = { inputProps: { "aria-label": "Checkbox demo" } };
 
 const Sidebar = (props) => {
@@ -36,7 +36,7 @@ const Sidebar = (props) => {
 
   var brands = [];
   var ratings = [];
-  console.log('props',props.currentCatData)
+  // console.log('props',props.currentCatData)
 
   useEffect(() => {
     brands = [];
@@ -209,7 +209,7 @@ const Sidebar = (props) => {
           </div>
         </div>
 
-        {/* <img src={bannerImg} className="w-100" /> */}
+        <img src={bannerImg} className="w-100" />
       </div>
     </>
   );

@@ -55,69 +55,71 @@ const Home = ({ categoriData, productData }) => {
 
   return (
     <div className="containerUser" style={{ display: "block" }}>
-      <SliderBanner />
-      {categoriData && categoriData.length > 0 && (
-        <CatSlider data={categoriData} />
-      )}
-      <Banners />
-
-      <section className="homeProducts homeProductWrapper">
-        <div className="container-fluid">
-          <div className="d-flex align-items-center homeProductsTitleWrap">
-            <h2 className="hd mb-0 mt-0 res-full">Sản phẩm phổ biến</h2>
-            <ul className="list list-inline ml-auto filterTab mb-0 res-full">
-              {categoriData.length !== 0 &&
-                categoriData.map((cat, index) => (
-                  <li className="list list-inline-item" key={cat._id}>
-                    <a
-                      className={`cursor text-capitalize ${
-                        activeTabIndex === index ? "act" : ""
-                      }`}
-                      onClick={() => {
-                        setactiveTab(cat._id);
-                        setactiveTabIndex(index);
-                        productRow.current.scrollLeft = 0;
-                        setIsLoadingProducts(true);
-                      }}
-                    >
-                      {cat.name}
-                    </a>
-                  </li>
-                ))}
-            </ul>
-          </div>
-
-          <div
-            className={`productRow ${isLoadingProducts && "loading"}`}
-            ref={productRow}
-          >
-            {activeTabData.map((item, index) => (
-              <div className="item" key={index}>
-                <Product item={item} />
+      {context.search === false ? (
+        <>
+          {/* <SliderBanner /> */}
+          {/* {categoriData && categoriData.length > 0 && (
+            <CatSlider data={categoriData} />
+          )} */}
+          {/* <Banners /> */}
+          
+          <section className="homeProducts homeProductWrapper">
+            <div className="container-fluid">
+              <div className="d-flex align-items-center homeProductsTitleWrap">
+                <h2 className="hd mb-0 mt-0 res-full">Sản phẩm phổ biến</h2>
+                <ul className="list list-inline ml-auto filterTab mb-0 res-full">
+                  {categoriData.length !== 0 &&
+                    categoriData.map((cat, index) => (
+                      <li className="list list-inline-item" key={cat._id}>
+                        <a
+                          className={`cursor text-capitalize ${
+                            activeTabIndex === index ? "act" : ""
+                          }`}
+                          onClick={() => {
+                            setactiveTab(cat._id);
+                            setactiveTabIndex(index);
+                            productRow.current.scrollLeft = 0;
+                            setIsLoadingProducts(true);
+                          }}
+                        >
+                          {cat.name}
+                        </a>
+                      </li>
+                    ))}
+                </ul>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
-      <section className="homeProducts homeProductsRow2 pt-0">
-        <div className="container-fluid">
-          <div className="d-flex align-items-center">
-            <h2 className="hd mb-0 mt-0">Sản phẩm bán chạy</h2>
-          </div>
+              <div
+                className={`productRow ${isLoadingProducts && "loading"}`}
+                ref={productRow}
+              >
+                {activeTabData.map((item, index) => (
+                  <div className="item" key={index}>
+                    <Product item={item} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
 
-          <br className="res-hide" />
-          <br className="res-hide" />
-          <div className="prodSlider">
-            <Slider {...settings}>
-              {bestSells.map((item, index) => (
-                <div className="item" key={index}>
-                  <Product item={item} />
-                </div>
-              ))}
-            </Slider>
-          </div>
-          {/* <div className="row">
+          <section className="homeProducts homeProductsRow2 pt-0">
+            <div className="container-fluid">
+              <div className="d-flex align-items-center">
+                <h2 className="hd mb-0 mt-0">Sản phẩm bán chạy</h2>
+              </div>
+
+              <br className="res-hide" />
+              <br className="res-hide" />
+              <div className="prodSlider">
+                <Slider {...settings}>
+                  {bestSells.map((item, index) => (
+                    <div className="item" key={index}>
+                      <Product item={item} />
+                    </div>
+                  ))}
+                </Slider>
+              </div>
+              {/* <div className="row">
             <div className="col-md-12">
               <Slider {...settings} className="prodSlider">
                 {bestSells.map((item, index) => (
@@ -128,8 +130,32 @@ const Home = ({ categoriData, productData }) => {
               </Slider>
             </div>
           </div> */}
-        </div>
-      </section>
+            </div>
+          </section>
+        </>
+      ) : (
+        <>
+          <section className="homeProducts homeProductsRow2 pt-0">
+            <div className="container-fluid">
+              <div className="d-flex align-items-center">
+                <h2 className="hd mb-0 mt-0">Sản phẩm tìm kiếm</h2>
+              </div>
+
+              <br className="res-hide" />
+              <br className="res-hide" />
+              <div className="prodSlider">
+                <Slider {...settings}>
+                  {productData.map((item, index) => (
+                    <div className="item" key={index}>
+                      <Product item={item} />
+                    </div>
+                  ))}
+                </Slider>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
 
       {/* <section className="topProductsSection">
         <div className="container-fluid">

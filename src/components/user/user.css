@@ -225,7 +225,7 @@ left: 0px;}
 .filters ul::-webkit-scrollbar-thumb{ background: #ccc !important;}
 .filters ul li{width: 100%; margin-bottom: 0px; list-style: none;}
 
-.filterWrapper{display: none !important;}
+/* .filterWrapper{display: none !important;} */
 .sidebarWrapper .sidebarUser  .btn{width: 100% !important;}
 
 
@@ -288,7 +288,7 @@ ul.breadcrumb li a:hover {
   .zoomSlider .slick-arrow.slick-prev{left: -5% !important;}
 
 
-  .productSize{width: 100%; height: auto; padding: 25px 0px;}
+  .productSize{width: 100%; height: auto; padding: 10px 0px;}
   .productSize ul li{margin-right: 10px !important;}
   .productSize ul li a{display: flex; align-items: center; justify-content: center; padding:10px 20px !important; border: 1px solid rgba(0,0,0,0.1); border-radius: 5px !important; cursor: pointer; text-decoration: none !important; color: #000; font-size: 16px !important; transition: all 0.1s ease-in-out;}
   

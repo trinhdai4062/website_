@@ -13,7 +13,7 @@ const Banners = () => {
 
   useEffect(() => {
     listIMG();
-  }, []);
+  }, [context]);
 
   const listIMG = async () => {
     let arr = [];

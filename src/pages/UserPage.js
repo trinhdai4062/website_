@@ -1,6 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "../components/user/user.css";  
+import "../components/user/user.css";
 import "../responsive.css";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -16,16 +16,21 @@ import Cart from "../components/user/cart";
 // import SignIn from "./pages/SignIn";
 // import SignUp from "./pages/SignUp";
 import Loader from "../assets/images/loading.gif";
-import api from "../api/api"
-import {AdminContext} from '../App'
+import api from "../api/api";
+import { AdminContext } from "../App";
 import Chat from "../components/user/Chat/chat";
-import {baseURL_} from'../utils/env';
+import { baseURL_ } from "../utils/env";
+import { UsbSharp } from "@mui/icons-material";
+import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+import { authSelector } from "../redux/reducer/authReducer";
 
 
 const UserContext = createContext();
 
 const UserPage = () => {
-  const context=useContext(AdminContext)
+  const auth=useSelector(authSelector)
+  const context = useContext(AdminContext);
   const [productData, setProductData] = useState([]);
   const [cartItems, setCartItems] = useState([]);
   const [categoriData, setCategoriData] = useState([]);
@@ -36,16 +41,19 @@ const UserPage = () => {
 
   const [isLogin, setIsLogin] = useState(true);
   const [isOpenFilters, setIsopenFilters] = useState(false);
+  const [search, setSearch] = useState(false);
 
-  const [cartTotalAmount, setCartTotalAmount] = useState();
 
   useEffect(() => {
+    // refreshAccessToken()
+    console.log('auth',auth.userInfor.data);
     getDataProduct(`${baseURL_}/shose`);
     getDataCateGori(`${baseURL_}/categori`);
-    setIsLogin(true);
+
     setTimeout(() => {
+      setIsLogin(false);
       setIsloading(false);
-    }, 3000);
+    }, 3000); 
   }, []);
   useEffect(() => {
     context.setisHideSidebarAndHeader(true);
@@ -60,22 +68,23 @@ const UserPage = () => {
       });
     } catch (error) {
       console.log(error.message);
-    } };
+    }
+  };
   const getDataCateGori = async (url) => {
     try {
       await api.get(url).then((response) => {
-        if(response.data.status){
+        if (response.data.status) {
           setCategoriData(response.data.data);
         }
       });
     } catch (error) {
       console.log(error.message);
     }
-  }
+  };
   const getDataProduct = async (url) => {
     try {
       await api.get(url).then((response) => {
-        if(response.data.status){
+        if (response.data.status) {
           setProductData(response.data.data);
         }
       });
@@ -83,33 +92,6 @@ const UserPage = () => {
       console.log(error.message);
     }
   };
-
-  // const addToCart = async (item) => {
-  //   item.quantity = 1;
-
-  //   try {
-  //     await api.post("http://localhost:5000/cartItems", item).then((res) => {
-  //       if (res !== undefined) {
-  //         setCartItems([...cartItems, { ...item, quantity: 1 }]);
-  //       }
-  //     });
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-
-  // const removeItemsFromCart = async (id) => {
-  //   const response = await api.delete(
-  //     `http://localhost:3000/cartItems/${id}`
-  //   );
-  //   if (response !== null) {
-  //     getCartData("http://localhost:3000/cartItems");
-  //   }
-  // };
-
-  // const emptyCart = () => {
-  //   setCartItems([]);
-  // };
 
   // const signIn = () => {
   //   const is_Login = localStorage.getItem("isLogin");
@@ -121,84 +103,84 @@ const UserPage = () => {
   //   setIsLogin(false);
   // };
 
-  // const openFilters = () => {
-  //   setIsopenFilters(!isOpenFilters);
-  // };
+  // const userData = useSelector(authSelector);
+  // console.log('userData',userData)
+
+  const openFilters = () => {
+    setIsopenFilters(!isOpenFilters);
+  };
 
   const value = {
-    cartItems,
-    isLogin,
     windowWidth,
     isOpenFilters,
-    // addToCart,
-    // removeItemsFromCart,
-    // emptyCart,
     // signOut,
     // signIn,
-    // openFilters,
+    search,
+    setSearch,
+    setProductData,
+    openFilters,
     isopenNavigation,
     setIsLogin,
     setIsopenNavigation,
-    setCartTotalAmount,
-    cartTotalAmount,
-    setCartItems,
-    cartItems,
   };
 
   // console.log('data.productData.length',value)
-  const data={
+  const data = {
     productData,
-    categoriData
-  }
+    categoriData,
+  };
   return (
     // data.productData.length !== 0 && (
-        <UserContext.Provider value={value}>
-          {isLoading === true && (
-            <div className="loader">
-              <img src={Loader} />
-            </div>
-          )}
+    <UserContext.Provider value={value}>
+      {isLoading === true && (
+        <div className="loader">
+          <img src={Loader} />
+        </div>
+      )}
 
-          <UserHeader data={data} />
-          <Routes>
-            <Route
-              exact={true}
-              path="/"
-              element={<Home categoriData={categoriData} productData={productData} />}
-            />
-            <Route
-              exact={true}
-              path="/home"
-              element={<Home categoriData={categoriData} productData={productData} />}
-            />
-            <Route
-              exact={true}
-              path="/cat/:id"
-              element={<Listing categoriData={categoriData}  single={true} />}
-            />
-            {/* <Route
+      <UserHeader data={data} />
+      <Routes>
+        <Route
+          exact={true}
+          path="/"
+          element={
+            <Home categoriData={categoriData} productData={productData} />
+          }
+        />
+        <Route
+          exact={true}
+          path="/home"
+          element={
+            <Home categoriData={categoriData} productData={productData} />
+          }
+        />
+        <Route
+          exact={true}
+          path="/cat/:id"
+          element={<Listing categoriData={categoriData} single={true} />}
+        />
+        {/* <Route
               exact={true}
               path="/cat/:id/:id"
               element={<Listing data={data.productData} single={false} />}
             /> */}
-            <Route
-              exact={true}
-              path="/product/:id"
-              element={<DetailsPage productData={productData} />}
-            />
-            <Route exact={true} path="/cart" element={<Cart />} />
-            {/* <Route exact={true} path="/signIn" element={<SignIn />} />
+        <Route
+          exact={true}
+          path="/product/:id"
+          element={<DetailsPage productData={productData} />}
+        />
+        <Route exact={true} path="/cart" element={<Cart />} />
+        {/* <Route exact={true} path="/signIn" element={<SignIn />} />
             <Route exact={true} path="/signUp" element={<SignUp />} /> */}
-            <Route exact={true} path="/checkout" element={<Checkout />} />
-            <Route exact={true} path="/chat" element={<Chat />} />
-            {/* <Route exact={true} path="*" element={<NotFound />} /> */}
-          </Routes>
-          <Footer />
-        </UserContext.Provider>
+        <Route exact={true} path="/checkout" element={<Checkout />} />
+        <Route exact={true} path="/chat" element={<Chat />} />
+        {/* <Route exact={true} path="*" element={<NotFound />} /> */}
+      </Routes>
+      <Footer />
+    </UserContext.Provider>
     // )
   );
-}
- 
+};
 
 export default UserPage;
 export { UserContext };

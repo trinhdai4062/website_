@@ -1,4 +1,4 @@
-header{width: 100%; height:auto; margin: auto; padding: 30px 0px; background: #fff;}
+.header{width: 100%; height:auto; margin: auto; padding: 30px 0px; background: #fff;}
 .headerWrapper{transition: all 0.3s ease-in-out; background: #fff; position: fixed; top: 0px; left: 0px; width: 100%; z-index: 1000;}
 .headerWrapper.fixed{ top: -126px;  }
 header .headerSearch{width: 100%; height: 60px; border: 1px solid #bce3c9; padding: 10px 20px; border-radius: 4px; }
@@ -8,7 +8,7 @@ header .headerSearch .search{width:87%; padding-left: 30px; position: relative;}
 header .headerSearch .search input{width: 100%; height: 50px; border: 0px; outline: none !important; font-size: 18px;}
 header .headerSearch .search .searchIcon{position: absolute; top: 12px; right:0px; opacity: 0.5; font-size: 30px !important;}
 
-.afterHeader{margin-top: 210px;}
+.afterHeader{margin-top: 100px;}
 
 
 header .countryWrapper .selectDropWrapper{width: 200px !important; height: 50px;  padding-left: 10px; display: flex; align-items: center;      border: 1px solid #ececec;

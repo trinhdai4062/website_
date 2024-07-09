@@ -19,11 +19,12 @@ import api from "../../../api/api";
 import { UserContext } from "../../../pages/UserPage";
 
 import { formatPrice } from "../../../utils/formart";
-import {baseURL_} from'../../../utils/env';
-
-
+import { baseURL_ } from "../../../utils/env";
+import { useDispatch } from "react-redux";
+import { addtoCart } from "../../../redux/reducer/shopReducer";
 
 const DetailsPage = ({ productData }) => {
+  const dispatch = useDispatch();
   const [zoomInage, setZoomImage] = useState(
     "https://www.jiomart.com/images/product/original/490000363/maggi-2-minute-masala-noodles-70-g-product-images-o490000363-p490000363-0-202305292130.jpg"
   );
@@ -31,7 +32,8 @@ const DetailsPage = ({ productData }) => {
   const [bigImageSize, setBigImageSize] = useState([1500, 1500]);
   const [smlImageSize, setSmlImageSize] = useState([150, 150]);
 
-  const [activeSize, setActiveSize] = useState(0);
+  const [activeSize, setActiveSize] = useState('');
+  const [activeColor, setActiveColor] = useState('');
 
   const [inputValue, setinputValue] = useState(1);
 
@@ -103,10 +105,6 @@ const DetailsPage = ({ productData }) => {
     zoomSliderBig.current.slickGoTo(index);
   };
 
-  const isActive = (index) => {
-    setActiveSize(index);
-  };
-
   const plus = () => {
     setinputValue(inputValue + 1);
   };
@@ -119,9 +117,8 @@ const DetailsPage = ({ productData }) => {
 
   const getProductData = async (url) => {
     try {
-
       await api.get(url).then((response) => {
-        console.log('setCurrentProduct', response.data);
+        console.log("setCurrentProduct", response.data);
         // setDataCateGori([response.data]);
         if (response.data.status === true) {
           setCurrentProduct(response.data);
@@ -131,6 +128,25 @@ const DetailsPage = ({ productData }) => {
       console.log(error.message);
     }
   };
+  const profileData = currentProduct?.data?.userId
+    ? currentProduct.data.userId
+    : null;
+
+  // const {
+  //   idConversation,
+  //   createdAt,
+  //   deviceToken,
+  //   idDiscount,
+  //   idInformation,
+  //   idNotification,
+  //   isActive,
+  //   role,
+  //   updateAt,
+  //   email,
+  //   ...newUser
+  // } = profileData||null;
+
+  console.log("newuser", profileData);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -221,17 +237,15 @@ const DetailsPage = ({ productData }) => {
   var reviews_Arr2 = [];
   const showReviews = async () => {
     try {
-      await api
-        .get("http://localhost:5000/productReviews")
-        .then((response) => {
-          if (response.data.length !== 0) {
-            response.data.map((item) => {
-              if (parseInt(item.productId) === parseInt(id)) {
-                reviews_Arr2.push(item);
-              }
-            });
-          }
-        });
+      await api.get("http://localhost:5000/productReviews").then((response) => {
+        if (response.data.length !== 0) {
+          response.data.map((item) => {
+            if (parseInt(item.productId) === parseInt(id)) {
+              reviews_Arr2.push(item);
+            }
+          });
+        }
+      });
     } catch (error) {
       console.log(error.message);
     }
@@ -242,9 +256,29 @@ const DetailsPage = ({ productData }) => {
   };
 
   const addToCart = (item) => {
-    console.log('item',item)
-    context.addToCart(item);
-    setIsadded(true);
+    const randomNumber = Math.floor(Math.random() * 9000) + 1000;
+    console.log("item", item.data);
+    const data = {
+      userId: profileData,
+      item: [
+        {
+          id: randomNumber + item.data._id,
+          productId: item.data._id,
+          name: item.data.name,
+          image: item.data.imageUrl,
+          size: activeSize,
+          color: activeColor,
+          quantity: 1,
+          price: item.data.price - item.data.price * (item.data.discount / 100),
+          selected: false,
+        },
+      ],
+    };
+    console.log("data", data);
+
+    dispatch(addtoCart(data));
+    // context.addToCart(item);
+    // setIsadded(true);
   };
 
   const getCartData = async (url) => {
@@ -262,13 +296,10 @@ const DetailsPage = ({ productData }) => {
     }
   };
 
-  const handleFavorite=()=>{
-    console.log('handleFavorite');
-  }
+  const handleFavorite = () => {
+    console.log("handleFavorite");
+  };
 
-  const handleArrows=()=>{
-    console.log('handleArrows');
-  }
 
   return (
     <>
@@ -365,7 +396,7 @@ const DetailsPage = ({ productData }) => {
                     currentProduct.imgShose.map((imgUrl, index) => {
                       return imgUrl.images.map((item, subIndex) => {
                         return (
-                          <div className="item" key={subIndex} >
+                          <div className="item" key={subIndex}>
                             <img
                               src={`${baseURL_}/resize?url=${item}&width=${bigImageSize[0]}&height=${bigImageSize[0]}`}
                               className="w-100"
@@ -415,16 +446,16 @@ const DetailsPage = ({ productData }) => {
                 {currentProduct.data.size !== undefined &&
                   currentProduct.data.size.length !== 0 && (
                     <div className="productSize d-flex align-items-center">
-                      <span>Size / Weight:</span>
+                      <span>Size:</span>
                       <ul className="list list-inline mb-0 pl-4">
-                        {currentProduct.data.size.map((item, index) => {
+                        {currentProduct.data.size.map((item) => {
                           return (
                             <li className="list-inline-item">
                               <a
                                 className={`tag ${
-                                  activeSize === index ? "active" : ""
+                                  activeSize === item ? "active" : ""
                                 }`}
-                                onClick={() => isActive(index)}
+                                onClick={() => setActiveSize(item)}
                               >
                                 {item}
                               </a>
@@ -435,14 +466,24 @@ const DetailsPage = ({ productData }) => {
                     </div>
                   )}
 
-                  <div className="productSize d-flex align-items-center">
-                    <span>Màu:</span>
-                    <ul className="list list-inline mb-0 pl-4">
-                          <li className="list-inline-item">
-                              {currentProduct.data.color} 
-                          </li>
-                    </ul>
-                  </div>
+                <div className="productSize d-flex align-items-center">
+                  <span>Màu:</span>
+                  <ul className="list list-inline mb-0 pl-4">
+                    {currentProduct.data.color.map((item) => (
+                      <li className="list-inline-item">
+                        <a
+                          className={`tag ${
+                            activeColor === item ? "active" : ""
+                          }`}
+                          onClick={()=>setActiveColor(item)}
+
+                        >
+                          {item}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 <div className="d-flex align-items-center">
                   <div className="d-flex align-items-center">
@@ -459,13 +500,12 @@ const DetailsPage = ({ productData }) => {
                           : "Thêm vào giỏ hàng"}
                       </Button>
                     )}
-                    <Button style={{}} className=" btn-lg addtocartbtn  ml-3  wishlist btn-border"
-                    onClick={handleFavorite}>
+                    <Button
+                      style={{}}
+                      className=" btn-lg addtocartbtn  ml-3  wishlist btn-border"
+                      onClick={handleFavorite}
+                    >
                       <FavoriteBorderOutlinedIcon />{" "}
-                    </Button>
-                    <Button className=" btn-lg addtocartbtn ml-3 btn-border"
-                     onClick={handleArrows}>
-                      <CompareArrowsIcon />
                     </Button>
                   </div>
                 </div>

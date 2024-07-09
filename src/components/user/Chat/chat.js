@@ -15,8 +15,7 @@ const Chat = () => {
   const [receivedMessages, setReceivedMessages] = useState([]);
 
   useEffect(() => {
-    // const newSocket = io(`${base_}`);
-    const newSocket = io(`http://localhost`);
+    const newSocket = io(`${base_}`);
     setSocket(newSocket);
     newSocket.emit("register", senderEmail);
 

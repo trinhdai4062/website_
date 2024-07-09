@@ -37,20 +37,23 @@ import Category from "../components/admin/Categories/Category";
 import CategoriesDetails from "../components/admin/Categories/Details";
 import CategoryUpload from "../components/admin/Categories/Upload";
 import api, { checkTokenExpiration, refreshAccessToken } from "../api/api";
-import { baseURL_,base_ } from "../utils/env";
+import { baseURL_, base_ } from "../utils/env";
+import { useSelector } from "react-redux";
+import { authSelector } from "../redux/reducer/authReducer";
 const AdminPage = () => {
-  const context = useContext(AdminContext);
+  const auth = useSelector(authSelector);
+  // const context = useContext(AdminContext);
   const navigate = useNavigate();
   // useEffect(() => {
   //   if (!context.isLogin || !context.shop) {
   //     navigate('/login');
   //   }
   // }, [context, navigate]);
-  const accessToken = localStorage.getItem("accessToken");
+  const accessToken = localStorage.getItem("access_token");
   const shopp = localStorage.getItem("shop");
+  const role = localStorage.getItem("role");
 
-
-  console.log("Access", context);
+  // console.log("Access", auth.userInfor.data.shop);
   console.log("accessToken", accessToken);
 
   // useEffect(() => {
@@ -81,16 +84,17 @@ const AdminPage = () => {
 
   //   // checkAndRefreshToken();
   // }, [isLogin]);
+
   useEffect(() => {
-    if (context.role === "admin") {
+    if (auth.userInfor.data&&auth.userInfor.data.role === "admin") {
       getAdminProducts();
     }
-    if (shopp===false) {
+    if (auth.userInfor.data&&auth.userInfor.data.shop === false) {
       navigate("/login");
     }
-    context.setIsLogin(true)
-    context.setShop(true)
-  }, []);
+    // context.setIsLogin(true)
+    // context.setShop(true)
+  }, [auth]);
 
   const getAdminProducts = async () => {
     try {
@@ -117,22 +121,17 @@ const AdminPage = () => {
         <>
           <Route path="/" element={<Dashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          {context.role &&
-            context.role ==='admin' &&
-               (
-                <>
-                  <Route path="/category" element={<Category />} />
-                  <Route
-                    path="/category/details/:id"
-                    element={<CategoriesDetails />}
-                  />
-                  <Route path="/category/add" element={<CategoryAdd />} />
-                  <Route
-                    path="/category/upload/:id"
-                    element={<CategoryUpload />}
-                  />
-                </>
-              )}
+          {auth && auth.userInfor.data && auth.userInfor.data === "admin" && (
+            <>
+              <Route path="/category" element={<Category />} />
+              <Route
+                path="/category/details/:id"
+                element={<CategoriesDetails />}
+              />
+              <Route path="/category/add" element={<CategoryAdd />} />
+              <Route path="/category/upload/:id" element={<CategoryUpload />} />
+            </>
+          )}
 
           <Route path="/products" element={<Products />} />
           <Route path="/product/details/:id" element={<ProductDetails />} />

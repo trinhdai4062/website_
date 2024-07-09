@@ -21,25 +21,24 @@ import { messaging } from "./firebase";
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer, toast } from "react-toastify";
-import { getToken,onMessage } from 'firebase/messaging';
+import { getToken, onMessage } from "firebase/messaging";
+import { KEY_NOTIFICATION } from "./utils/env";
 
-
-
+import { Provider } from "react-redux";
+import store from "./redux/store";
 
 const AdminContext = createContext();
 
 function App() {
-  
-
   const [isToggleSidebar, setIsToggleSidebar] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
   const [isHideSidebarAndHeader, setisHideSidebarAndHeader] = useState(false);
   const [themeMode, setThemeMode] = useState(true);
-  const [role, setRole] = useState("");
+  const [role, setRole] = useState(false);
   const [shop, setShop] = useState(false);
-  const [userData, setUserData] = useState();
+
   const [accessToken, setAccessToken] = useState(
-    localStorage.getItem("accessToken")
+    localStorage.getItem("access_token")
   );
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   useEffect(() => {
@@ -66,30 +65,27 @@ function App() {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-   
   }, []);
 
   useEffect(() => {
-    
-    getFCMToken()
+    getFCMToken();
     receiveNotification();
   }, []);
-
-const KEY_NOTIFICATION='BM3Y2Pjac_cXYLqdMcakUzyRr18yJVgFmzLvLB6TeLaxKVWAEH-IU6waqCyrPighwscW6IGwtniojdS1diOptJA'
   const getFCMToken = async () => {
     try {
-      const currentToken = await getToken(messaging, { vapidKey: KEY_NOTIFICATION });
+      const currentToken = await getToken(messaging, {
+        vapidKey: KEY_NOTIFICATION,
+      });
       if (currentToken) {
-        console.log('Current token:', currentToken);
-
-      } 
+        console.log("Current token:", currentToken);
+      }
     } catch (error) {
-      console.error('Error retrieving FCM token:', error);
+      console.error("Error retrieving FCM token:", error);
     }
   };
-  const receiveNotification = async() => {
-   const aa= await onMessage(messaging,(payload) => {
-      console.log('Received message:', payload);
+  const receiveNotification = async () => {
+    const aa = await onMessage(messaging, (payload) => {
+      console.log("Received message:", payload);
 
       // Customize notification display (e.g., toast, alert)
       toast.info(payload.notification.title);
@@ -98,92 +94,88 @@ const KEY_NOTIFICATION='BM3Y2Pjac_cXYLqdMcakUzyRr18yJVgFmzLvLB6TeLaxKVWAEH-IU6wa
   };
 
   useEffect(() => {
-    const U_Data = localStorage.getItem("userData");
-    const Token = localStorage.getItem("accessToken");
-    // console.log('Token', Token);
-    if (U_Data) {
-      setUserData(U_Data);
-      setRole(JSON.parse(U_Data).role);
-    }
-    if (Token) {
-      setAccessToken(Token);
+    const token = localStorage.getItem("access_token");
+    const shop = localStorage.getItem("shop");
+    const role = localStorage.getItem("setRole");
+    // console.log('Token', token);
+    role==='admin'?setRole(true) : setRole(false);
+    if (token &&shop) {
+      setShop(true);
       setIsLogin(true);
     } else {
+      setShop(false);
       setIsLogin(false);
     }
-    
   }, [accessToken]);
-
-
-
-
-
-  
 
   // console.log('acctoken',accessToken)
 
   const values = {
     isToggleSidebar,
     setIsToggleSidebar,
-    isLogin,
-    setIsLogin,
     isHideSidebarAndHeader,
     setisHideSidebarAndHeader,
     themeMode,
-    setThemeMode,
     role,
-    shop,
-    setShop,
+    setThemeMode,
   };
 
   return (
-    <BrowserRouter>
-      <AdminContext.Provider value={values}>
-        {!isHideSidebarAndHeader && <AdminHeader />}
-        <div className="main d-flex">
-          {isHideSidebarAndHeader !== true && (
+    <Provider store={store}>
+      <BrowserRouter>
+        <AdminContext.Provider value={values}>
+          {!isHideSidebarAndHeader && <AdminHeader />}
+          <div className="main d-flex">
+            {isHideSidebarAndHeader !== true && (
+              <div
+                className={`sidebarWrapper ${
+                  isToggleSidebar === true ? "toggle" : ""
+                }`}
+              >
+                <AdminSidebar />
+              </div>
+            )}
             <div
-              className={`sidebarWrapper ${
-                isToggleSidebar === true ? "toggle" : ""
-              }`}
+              className={`content ${
+                isHideSidebarAndHeader === true && "full"
+              } ${isToggleSidebar === true ? "toggle" : ""}`}
             >
-              <AdminSidebar />
+              <Routes>
+                <Route
+                  path={`/login`}
+                  element={
+                    <Login
+                      setIsLogin={setIsLogin}
+                      setAccessToken={setAccessToken}
+                    />
+                  }
+                />
+                {/* <Route path={`/login`} element={<Login />} /> */}
+                <Route path={`/signUp`} element={<SignUp />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    isLogin && shop && accessToken && isOnline ? (
+                      <AdminPage />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
+                <Route path="/admin/*" element={<AdminPage />} />
+                <Route path="/user/*" element={<UserPage />} />
+                <Route
+                  path="/"
+                  element={<Navigate to="/user/home" replace />}
+                />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
             </div>
-          )}
-          <div
-            className={`content ${isHideSidebarAndHeader === true && "full"} ${
-              isToggleSidebar === true ? "toggle" : ""
-            }`}
-          >
-            <Routes>
-            <Route
-                path={`/login`}
-                element={
-                  <Login setIsLogin={setIsLogin} setAccessToken={setAccessToken} />
-                }
-              />
-              {/* <Route path={`/login`} element={<Login />} /> */}
-              <Route path={`/signUp`} element={<SignUp />} />
-              <Route
-                path="/dashboard"
-                element={
-                  isLogin && shop && accessToken && isOnline ? (
-                    <AdminPage />
-                  ) : (
-                    <Navigate to="/login" />
-                  )
-                }
-              />
-              <Route path="/admin/*" element={<AdminPage />} />
-              <Route path="/user/*" element={<UserPage />} />
-              <Route path="/" element={<Navigate to="/user/home" replace />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
           </div>
-        </div>
-        <ToastContainer />
-      </AdminContext.Provider>
-    </BrowserRouter>
+          <ToastContainer />
+        </AdminContext.Provider>
+      </BrowserRouter>
+    </Provider>
   );
 }
 

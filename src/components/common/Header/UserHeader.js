@@ -33,56 +33,70 @@ import FmdGoodOutlinedIcon from "@mui/icons-material/FmdGoodOutlined";
 
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
-import { baseIMG_ } from "../../../utils/env";
+import { baseIMG_ } from "../../../utils/env"
+import { useSelector,useDispatch } from "react-redux";
+import { authSelector,removeLogin } from "../../../redux/reducer/authReducer";
+import { cartSelector } from "../../../redux/reducer/shopReducer";
 
 const UserHeader = (props) => {
+  const auth=useSelector(authSelector)
+  const cart=useSelector(cartSelector)
+  const dispatch=useDispatch();
   const [isOpenDropDown, setisOpenDropDown] = useState(false);
   const [isOpenAccDropDown, setisOpenAccDropDown] = useState(false);
-
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [isopenSearch, setOpenSearch] = useState(false);
   const [isOpenNav, setIsOpenNav] = useState(false);
   const [categories, setcategories] = useState([]);
   const [selectCate, setSelectCate] = useState("");
+  const [dataSave, setDataSave] = useState([]);
   const headerRef = useRef();
   const searchInput = useRef();
   const [searchValue, setSearchValue] = useState("");
 
   const context = useContext(UserContext);
   const navigate = useNavigate();
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  console.log("user", userData);
-  useEffect(() => {}, [context.cartItems]);
-
   useEffect(() => {
     const temp = props.data.categoriData.map((item) => ({
       name: item.name,
       id: item._id,
     }));
     setcategories(temp);
+    setDataSave(props.data.productData)
   }, [props]);
 
+  console.log('cart::::::',cart.quantityProduct)
+
+
+  const userData =auth.userInfor.data?auth.userInfor.data:null
+  // console.log('object',auth.userData)
+
+  // const userData = useSelector(authSelector);
+
   // useEffect(() => {
-  //     window.addEventListener("scroll", () => {
-  //         let position = window.pageYOffset;
-  //         if (position > 100) {
-  //             headerRef.current.classList.add('fixed');
-  //         } else {
-  //             headerRef.current.classList.remove('fixed');
-  //         }
-  //     })
-  // }, [])
-  console.log("context", context);
+  //   window.addEventListener("scroll", () => {
+  //     let position = window.pageYOffset;
+  //     if (headerRef.current) {
+  //       if (position > 100) {
+  //         headerRef.current.classList.add("fixed");
+  //       } else {
+  //         headerRef.current.classList.remove("fixed");
+  //       }
+  //     }
+  //   });
+  // }, []);
+  // console.log("context", context);
+  // console.log("dataSave", dataSave);
+  // console.log("props", props.data.productData);
 
   const signOut = () => {
     const token = JSON.parse(localStorage.getItem("accessToken"));
     if (token !== null) {
       localStorage.removeItem("accessToken");
-      localStorage.removeItem("_id");
-      localStorage.removeItem("userData");
       localStorage.removeItem("shop");
+      localStorage.removeItem("role");
+      dispatch(removeLogin())
     }
-    context.setIsLogin(false);
     navigate("/login");
   };
 
@@ -113,18 +127,25 @@ const UserHeader = (props) => {
   };
 
   const performSearch = () => {
-    const kd = props.data.productData.filter((i) => {
-      const nameMatches = i.name
-        .toLowerCase()
-        .includes(searchValue.toLowerCase());
-      const categoryMatches = selectCate
-        ? i.parentCategory === selectCate
-        : true;
-      return nameMatches && categoryMatches;
-    });
+    // const kd = props.data.productData.filter((i) => {
+    //   const nameMatches = i.name
+    //     .toLowerCase()
+    //     .includes(searchValue.toLowerCase());
+    //   const categoryMatches = selectCate
+    //     ? i.parentCategory === selectCate
+    //     : true;
+    //   return nameMatches && categoryMatches;
 
-    console.log("usser:", kd);
-    console.log("Searching for:", searchValue);
+    // });
+    // if(kd.length > 0) {
+    //   context.setSearch(true)
+    //   context.setProductData(kd)
+    // }
+
+
+
+    // console.log("usser:", kd);
+    // console.log("Searching for:", searchValue);
   };
 
   const handleCategorySelect = (category) => {
@@ -134,7 +155,7 @@ const UserHeader = (props) => {
   return (
     <>
       <div className="headerWrapper" ref={headerRef}>
-        <header>
+        <header className="header">
           <div className="container-fluid">
             <div className="row">
               <div className="col-sm-2 part1 d-flex align-items-center">
@@ -166,7 +187,7 @@ const UserHeader = (props) => {
                     <div className="navbarToggle mr-2" onClick={openNav}>
                       <MenuIcon />
                     </div>
-                    {context.isLogin === "true" && (
+                    {userData!==null && (
                       <div
                         className="myAccDrop"
                         onClick={() => setisOpenAccDropDown(!isOpenAccDropDown)}
@@ -177,7 +198,7 @@ const UserHeader = (props) => {
                   </div>
                 )}
               </div>
-
+                
               {/*headerSearch start here */}
               <div className="col-sm-5 part2">
                 <div
@@ -233,11 +254,11 @@ const UserHeader = (props) => {
                       <li className="list-inline-item">
                         <EmailOutlinedIcon />
                         <span>
-                        <Link to={"/user/chat"}>
-                          <span className="badge bg-success rounded-circle">
-                            3
-                          </span>
-                          Message
+                          <Link to={"/user/chat"}>
+                            <span className="badge bg-success rounded-circle">
+                              3
+                            </span>
+                            Message
                           </Link>
                         </span>
                       </li>
@@ -247,27 +268,31 @@ const UserHeader = (props) => {
                             {" "}
                             <img src={IconCart} />
                             <span className="badge bg-success rounded-circle">
-                              {context.cartItems.length}
+                              {cart.quantityProduct?cart.quantityProduct:0}
                             </span>
                             Cart
                           </Link>
                         </span>
                       </li>
 
-                      {context.isLogin === true ? (
+                      {userData!==null ? (
                         <li className="list-inline-item">
                           <span
                             onClick={() => setisOpenDropDown(!isOpenDropDown)}
                           >
                             <img
                               src={
-                                userData && userData.avatar
+                                userData!==null && userData.avatar
                                   ? userData.avatar
                                   : IconUser
                               }
-                              style={{ height: 50, width: 50,borderRadius:25 }}
+                              style={{
+                                height: 50,
+                                width: 50,
+                                borderRadius: 25,
+                              }}
                             />
-                            {userData.fullName
+                            {userData&&userData.fullName
                               ? userData.fullName
                               : userData.username}
                           </span>
@@ -277,7 +302,7 @@ const UserHeader = (props) => {
                               <li>
                                 <Button className="align-items-center">
                                   <Person2OutlinedIcon />{" "}
-                                  {userData.fullName
+                                  {userData&&userData.fullName
                                     ? userData.fullName
                                     : userData.username}
                                 </Button>
